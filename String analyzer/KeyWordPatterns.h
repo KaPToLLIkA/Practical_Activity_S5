@@ -16,6 +16,9 @@ private:
 		};
 	}
 
+	KeyWordPatterns(const KeyWordPatterns&) = delete;
+	KeyWordPatterns& operator=(KeyWordPatterns&) = delete;
+
 public:
 	static KeyWordPatterns* getInst() {
 		if (instance == nullptr) {

@@ -48,6 +48,9 @@
     <ClCompile Include="BinaryOperatorPatterns.cpp">
       <Filter>Исходные файлы\Patterns</Filter>
     </ClCompile>
+    <ClCompile Include="InstructionsSeparatorPatterns.cpp">
+      <Filter>Исходные файлы\Patterns</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Token.h">
@@ -66,6 +69,9 @@
       <Filter>Файлы заголовков\Patterns</Filter>
     </ClInclude>
     <ClInclude Include="LiteralsPatterns.h">
+      <Filter>Файлы заголовков\Patterns</Filter>
+    </ClInclude>
+    <ClInclude Include="InstructionsSeparatorPatterns.h">
       <Filter>Файлы заголовков\Patterns</Filter>
     </ClInclude>
   </ItemGroup>

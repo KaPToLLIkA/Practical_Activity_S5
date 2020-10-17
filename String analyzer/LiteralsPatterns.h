@@ -8,8 +8,8 @@ private:
 
 	LiteralsPatterns() {
 		this->patterns = {
-			std::regex("^\s*\d*\s*"), //integer
-			std::regex("(^\s*\"(\S*|\s*)*\"\s*)|(^\s*\'(\S*|\s*)*\'\s*)"), //string
+			std::regex("^\\s*\\d*\\s*"), //integer
+			//std::regex("(^\\s*\"(\\S*|\\s*)*\"\\s*)|(^\\s*\'(\\S*|\\s*)*\'\\s*)"), //string
 		};
 	}
 
