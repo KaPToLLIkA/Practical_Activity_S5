@@ -9,6 +9,11 @@ private:
 	BinaryOperatorPatterns() {
 		this->patterns = {
 			std::regex("^\\s*=\\s*"),
+			std::regex("^\\s*\\+\\s*"),
+			std::regex("^\\s*-\\s*"),
+			std::regex("^\\s*/\\s*"),
+			std::regex("^\\s*%\\s*"),
+			std::regex("^\\s*\\*\\s*"),
 		};
 	}
 

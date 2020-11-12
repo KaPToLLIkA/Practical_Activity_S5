@@ -80,6 +80,26 @@ int main() {
 				std::cout << "Can't find instructions separator at start of " << str << std::endl;
 				break;
 			}
+
+			while (true) {
+				result = findToken(str, KeyWordPatterns::getInst()->getPatterns());
+				if (result.success) {
+					tokens.push_back(result.token);
+				}
+				else {
+					std::cout << "Can't find key word at start of " << str << std::endl;
+					break;
+				}
+
+				result = findToken(str, InstructionsSeparatorPatterns::getInst()->getPatterns());
+				if (result.success) {
+					tokens.push_back(result.token);
+				}
+				else {
+					std::cout << "Can't find instructions separator at start of " << str << std::endl;
+					break;
+				}
+			}
 		}
 
 		std::cout << "Result set: \n";

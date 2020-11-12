@@ -8,11 +8,11 @@ private:
 
 	KeyWordPatterns() {
 		this->patterns = {
-			std::regex(""),
-			std::regex(""),
-			std::regex(""),
-			std::regex(""),
-			std::regex(""),
+			std::regex("\\s*while"),
+			std::regex("\\s*do"),
+			std::regex("\\s*if"),
+			std::regex("\\s*else"),
+			std::regex("\\s*return"),
 		};
 	}
 
