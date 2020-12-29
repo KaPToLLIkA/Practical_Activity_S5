@@ -1,0 +1,93 @@
+context free grammar for the part of C programming language
+=======================================================================================
+
+literal -> ...
+
+types -> 
+	int | char | double | float | bool
+
+modificators -> 
+	unsigned | signed | short | long | empty
+
+opt_mod -> 
+	const | "empty"
+
+type -> 
+	opt_mod modificators types opt_mod* opt_mod		//not used
+	| opt_mod modificators types opt_mod& opt_mod	//not used
+	| opt_mod modificators types
+
+array_type -> 
+	modificators types
+
+array_vals ->
+	literal, array_vals 
+	| literal
+	| identifier, array_vals
+	| identifier
+
+identifier ->
+	^(\\s)*[_,a-z,A-Z][_,A-Z,a-z,0-9]*[_,A-Z,a-z,0-9]
+
+definition -> 
+	type identifier
+	| type identifier = literal
+	| array_type identifier [ literal ]
+	| array_type identifier [ literal ] = { array_vals }
+
+
+math_expr -> 
+	math_expr + term
+	| math_expr - term
+	| term
+
+term ->
+	term * factor
+	| term / factor
+	| term % factor
+	| factor
+
+factor -> 
+	literal
+	| ( math_expr )
+
+logic_expr ->
+	a == b
+	| a != b
+	| a < b
+	| a > b
+	| a <= b
+	| a >= b
+
+a -> literal
+	| identifier
+
+b -> literal
+	| identifier
+
+expression -> 
+	definition
+	| identifier = expression
+	| identifier
+	| math_expr
+	| logic_expr
+	| "empty"
+
+optional_expression -> 
+	"empty"
+	| expression
+
+statements -> 
+	expression ; statements
+	| statement
+	| "empty"
+			
+statement -> 
+	{ statements }
+	| expression ;
+	| if ( expression ) statement else statement
+	| if ( expression ) statement
+	| for ( optional_expression ; optional_expression ; optional_expression) statement
+	| while ( expression ) statement
+	| do statement while ( expression )
+
