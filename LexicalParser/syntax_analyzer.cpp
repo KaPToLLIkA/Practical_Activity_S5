@@ -66,10 +66,9 @@ void syntax_analyzer::statement(tree_node& current_node, size_t start, size_t en
 		else {
 			current_node.childs.push_back(tree_node("{"));
 			current_node.childs.push_back(tree_node("statements"));
-			tree_node next = current_node.childs.back();
+			statements(current_node.childs.back(), start + 1, pos - 1);
 			current_node.childs.push_back(tree_node("}"));
 
-			statements(next, start + 1, pos - 1);
 		}
 	}
 	else if (token == "if") {
@@ -83,17 +82,17 @@ void syntax_analyzer::statement(tree_node& current_node, size_t start, size_t en
 				current_node.childs.push_back(tree_node("if"));
 				current_node.childs.push_back(tree_node("("));
 				current_node.childs.push_back(tree_node("expression"));
-				tree_node next = current_node.childs.back();
+				expression(current_node.childs.back(), start + 2, pos - 1);
 				current_node.childs.push_back(tree_node(")"));
 
-				expression(next, start + 2, pos - 1);
 
 				start = pos + 1;
 				current_node.childs.push_back(tree_node("statement"));
 
 				size_t else_p = get_first(start, end, "else");
+				size_t next_if = get_first(start, end, "if");
 
-				if (else_p > end) {
+				if (else_p > end || else_p > next_if) {
 					statement(current_node.childs.back(), start, end);
 				}
 				else {
@@ -219,6 +218,7 @@ void syntax_analyzer::statements(tree_node& current_node, size_t start, size_t e
 	if (token == "{" || token == "if" || token == "for" || token == "while" || token == "do") {
 		current_node.childs.push_back(tree_node("statement"));
 		statement(current_node.childs.back(), start, end);
+		
 	}
 	else {
 		size_t sep_pos = get_first(start, end, ";");
@@ -230,8 +230,8 @@ void syntax_analyzer::statements(tree_node& current_node, size_t start, size_t e
 			current_node.childs.push_back(tree_node("expression"));
 			expression(current_node.childs.back(), start, sep_pos - 1);
 			current_node.childs.push_back(tree_node(";"));
-			current_node.childs.push_back(tree_node("statement"));
-			statement(current_node.childs.back(), sep_pos + 1, end);
+			current_node.childs.push_back(tree_node("statements"));
+			statements(current_node.childs.back(), sep_pos + 1, end);
 		}
 	}
 }
@@ -242,25 +242,48 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 		return;
 	}
 
-	current_node.childs.push_back(tree_node("definition"));
-	definition(current_node.childs.back(), start, end);
-	if (current_node.childs.back().childs.empty()) {
-		current_node.childs.pop_back();
-	}
 
-	current_node.childs.push_back(tree_node("math_expr"));
-	math_expr(current_node.childs.back(), start, end);
-	if (current_node.childs.back().childs.empty()) {
-		current_node.childs.pop_back();
+	if (get_first(start, end, "int") != std::string::npos
+		|| get_first(start, end, "bool") != std::string::npos
+		|| get_first(start, end, "char") != std::string::npos
+		|| get_first(start, end, "double") != std::string::npos
+		|| get_first(start, end, "float") != std::string::npos
+		) {
+		current_node.childs.push_back(tree_node("definition"));
+		definition(current_node.childs.back(), start, end);
+		if (current_node.childs.back().childs.empty()) {
+			current_node.childs.pop_back();
+		}
 	}
-
-	current_node.childs.push_back(tree_node("logic_expr"));
-	logic_expr(current_node.childs.back(), start, end);
-	if (current_node.childs.back().childs.empty()) {
-		current_node.childs.pop_back();
+	else if (get_first(start, end, "+") != std::string::npos
+		|| get_first(start, end, "-") != std::string::npos
+		|| get_first(start, end, "/") != std::string::npos
+		|| get_first(start, end, "*") != std::string::npos
+		|| get_first(start, end, "%") != std::string::npos
+		) {
+		current_node.childs.push_back(tree_node("math_expr"));
+		math_expr(current_node.childs.back(), start, end);
+		if (current_node.childs.back().childs.empty()) {
+			current_node.childs.pop_back();
+		}
 	}
-
-	if (std::regex_match(tokens[start].data, r_identifier)) {
+	else if (get_first(start, end, "==") != std::string::npos
+		|| get_first(start, end, "!=") != std::string::npos
+		|| get_first(start, end, "<=") != std::string::npos
+		|| get_first(start, end, ">=") != std::string::npos
+		|| get_first(start, end, "<") != std::string::npos
+		|| get_first(start, end, ">") != std::string::npos
+		) {
+		current_node.childs.push_back(tree_node("logic_expr"));
+		logic_expr(current_node.childs.back(), start, end);
+		if (current_node.childs.back().childs.empty()) {
+			current_node.childs.pop_back();
+		}
+	}
+	else if (std::regex_match(tokens[start].data, r_identifier) 
+		&& !std::regex_match(tokens[start].data, r_types)
+		&& !std::regex_match(tokens[start].data, r_modificators)
+		&& !std::regex_match(tokens[start].data, r_opt_mod)) {
 		current_node.childs.push_back(tree_node("identifier"));
 		current_node.childs.back().childs.push_back(tokens[start].data);
 
@@ -268,8 +291,13 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 			current_node.childs.push_back(tree_node("="));
 			start += 1;
 			if (start + 1 <= end) {
+				if (tokens[start + 1].type == token_type::literal) {
+					current_node.childs.push_back(tree_node("literal"));
+					current_node.childs.back().childs.push_back(tree_node(tokens[start + 1].data));
+				} else {
 				current_node.childs.push_back(tree_node("expression"));
 				expression(current_node.childs.back(), start + 1, end);
+				}
 			}
 			else {
 				add_error("has no expression ", start - 1, end);
@@ -546,12 +574,62 @@ void syntax_analyzer::array_values(tree_node& current_node, size_t start, size_t
 		current_node.childs.back().childs.push_back(tree_node(tokens[start].data));
 
 		if (start + 1 <= end && tokens[start + 1].data == ",") {
-			array_values(current_node, start + 1, end);
+			current_node.childs.push_back(tree_node(","));
+			array_values(current_node, start + 2, end);
 		}
 	}
 	else {
 		add_error("illegal array value ", start, end);
 	}
+}
+
+void syntax_analyzer::rec_print(
+	std::ostream& out,
+	tree_node& current,
+	std::vector<bool>& levels,
+	int32_t depth,
+	uint32_t l,
+	char spacer,
+	char down,
+	char cross
+)
+{
+
+	for (int32_t i = 0; i < depth; ++i) {
+		if (i != depth - 1) {
+			if (levels[i]) {
+				out << down;
+			}
+			else {
+				out << " ";
+			}
+			for (uint32_t x = 0; x < l; ++x) {
+				out << " ";
+			}
+		}
+		else {
+			out << cross;
+		}
+	}
+
+	if (depth) {
+		for (uint32_t i = 0; i < l; ++i) {
+			out << spacer;
+		}
+	}
+	
+	out << current.t << std::endl;
+
+	levels.push_back(true);
+	auto it = current.childs.begin();
+	while (it != current.childs.end()) {
+		if (it == --(current.childs.end())) {
+			levels[levels.size() - 1] = false;
+		}
+		rec_print(out, *it, levels, depth + 1, l, spacer, down, cross);
+		++it;
+	}
+	levels.erase(--levels.end());
 }
 
 
@@ -584,4 +662,10 @@ bool syntax_analyzer::has_errors()
 std::vector<std::string> syntax_analyzer::get_errors()
 {
 	return errors;
+}
+
+void syntax_analyzer::print(std::ostream& out)
+{
+	std::vector<bool> levels;
+	rec_print(out, root, levels, 0, 3, '-', '|', '+');
 }

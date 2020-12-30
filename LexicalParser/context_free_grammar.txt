@@ -87,7 +87,7 @@ statement ->
 	| expression ;
 	| if ( expression ) statement else statement
 	| if ( expression ) statement
-	| for ( optional_expression ; optional_expression ; optional_expression) statement
+	| for ( optional_expression ; optional_expression ; optional_expression) statement 
 	| while ( expression ) statement
 	| do statement while ( expression )
 

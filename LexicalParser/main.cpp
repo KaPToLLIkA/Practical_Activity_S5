@@ -5,7 +5,7 @@
 
 
 int main() {
-	code_loader loader("code.c");
+	code_loader loader("code2.c");
 
 	auto code = loader.load_code();
 
@@ -31,6 +31,7 @@ int main() {
 	syntax_analyzer syntax(tokens);
 
 	syntax.analyze();
+	syntax.print(std::cout);
 
 	return 0;
 }

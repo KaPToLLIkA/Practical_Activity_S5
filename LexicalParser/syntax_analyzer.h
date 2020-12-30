@@ -72,7 +72,15 @@ class syntax_analyzer
 	void a(tree_node& current_node, size_t start, size_t end);
 	void array_values(tree_node& current_node, size_t start, size_t end);
 	
-
+	void rec_print(
+		std::ostream& out,
+		tree_node& current,
+		std::vector<bool>& levels,
+		int32_t depth,
+		uint32_t l,
+		char spacer,
+		char down,
+		char cross);
 public:
 	explicit syntax_analyzer(std::vector<token>& tokens);
 
@@ -81,5 +89,7 @@ public:
 	tree_node& get_root();
 	bool has_errors();
 	std::vector<std::string> get_errors();
+
+	void print(std::ostream &out);
 };
 
