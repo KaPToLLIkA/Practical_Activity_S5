@@ -242,8 +242,43 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 		return;
 	}
 
+	if (std::regex_match(tokens[start].data, r_identifier)
+		&& !std::regex_match(tokens[start].data, r_types)
+		&& !std::regex_match(tokens[start].data, r_modificators)
+		&& !std::regex_match(tokens[start].data, r_opt_mod)) {
+		current_node.childs.push_back(tree_node("identifier"));
+		current_node.childs.back().childs.push_back(tokens[start].data);
 
-	if (get_first(start, end, "int") != std::string::npos
+		if (start + 1 <= end && tokens[start + 1].data == "=") {
+			current_node.childs.push_back(tree_node("="));
+			start += 1;
+			if (start + 1 <= end) {
+				if (tokens[start + 1].type == token_type::literal) {
+					current_node.childs.push_back(tree_node("literal"));
+					current_node.childs.back().childs.push_back(tree_node(tokens[start + 1].data));
+				}
+				else {
+					if (get_first(start, end, "+") != std::string::npos
+						|| get_first(start, end, "-") != std::string::npos
+						|| get_first(start, end, "/") != std::string::npos
+						|| get_first(start, end, "*") != std::string::npos
+						|| get_first(start, end, "%") != std::string::npos
+						) {
+						current_node.childs.push_back(tree_node("math_expr"));
+						math_expr(current_node.childs.back(), start + 1, end);
+					}
+					else {
+						current_node.childs.push_back(tree_node("expression"));
+						expression(current_node.childs.back(), start + 1, end);
+					}
+				}
+			}
+			else {
+				add_error("has no expression ", start - 1, end);
+			}
+		}
+	}
+	else if (get_first(start, end, "int") != std::string::npos
 		|| get_first(start, end, "bool") != std::string::npos
 		|| get_first(start, end, "char") != std::string::npos
 		|| get_first(start, end, "double") != std::string::npos
@@ -278,30 +313,6 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 		logic_expr(current_node.childs.back(), start, end);
 		if (current_node.childs.back().childs.empty()) {
 			current_node.childs.pop_back();
-		}
-	}
-	else if (std::regex_match(tokens[start].data, r_identifier) 
-		&& !std::regex_match(tokens[start].data, r_types)
-		&& !std::regex_match(tokens[start].data, r_modificators)
-		&& !std::regex_match(tokens[start].data, r_opt_mod)) {
-		current_node.childs.push_back(tree_node("identifier"));
-		current_node.childs.back().childs.push_back(tokens[start].data);
-
-		if (start + 1 <= end && tokens[start + 1].data == "=") {
-			current_node.childs.push_back(tree_node("="));
-			start += 1;
-			if (start + 1 <= end) {
-				if (tokens[start + 1].type == token_type::literal) {
-					current_node.childs.push_back(tree_node("literal"));
-					current_node.childs.back().childs.push_back(tree_node(tokens[start + 1].data));
-				} else {
-				current_node.childs.push_back(tree_node("expression"));
-				expression(current_node.childs.back(), start + 1, end);
-				}
-			}
-			else {
-				add_error("has no expression ", start - 1, end);
-			}
 		}
 	}
 }
@@ -406,6 +417,10 @@ void syntax_analyzer::math_expr(tree_node& current_node, size_t start, size_t en
 		add_error("illegal math expression", start, end);
 		return;
 	}
+	if (start == end) {
+		current_node.childs.push_back(tree_node(tokens[start].data));
+		return;
+	}
 
 	int bal = 0;
 	size_t sign = -1;
@@ -413,7 +428,7 @@ void syntax_analyzer::math_expr(tree_node& current_node, size_t start, size_t en
 		if (tokens[i].data == "(") {
 			++bal;
 		} 
-		else if (tokens[i].data == "(") {
+		else if (tokens[i].data == ")") {
 			--bal;
 		}
 		else if (tokens[i].data == "+" || tokens[i].data == "-") {
@@ -447,6 +462,7 @@ void syntax_analyzer::logic_expr(tree_node& current_node, size_t start, size_t e
 		add_error("has no logic expression ", start, end);
 		return;
 	}
+	
 
 	if (end - start > 2) {
 		add_error("illegal logic expression ", start, end);
@@ -481,13 +497,18 @@ void syntax_analyzer::term(tree_node& current_node, size_t start, size_t end)
 		return;
 	}
 
+	if (start == end) {
+		current_node.childs.push_back(tree_node(tokens[start].data));
+		return;
+	}
+
 	int bal = 0;
 	size_t sign = -1;
 	for (size_t i = start; i <= end; ++i) {
 		if (tokens[i].data == "(") {
 			++bal;
 		}
-		else if (tokens[i].data == "(") {
+		else if (tokens[i].data == ")") {
 			--bal;
 		}
 		else if (tokens[i].data == "%" || tokens[i].data == "/" || tokens[i].data == "*") {

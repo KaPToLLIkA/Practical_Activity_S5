@@ -3,6 +3,9 @@ context free grammar for the part of C programming language
 
 literal -> ...
 
+identifier ->
+	^(\\s)*[_,a-z,A-Z][_,A-Z,a-z,0-9]*[_,A-Z,a-z,0-9]
+
 types -> 
 	int | char | double | float | bool
 
@@ -13,12 +16,7 @@ opt_mod ->
 	const | "empty"
 
 type -> 
-	opt_mod modificators types opt_mod* opt_mod		//not used
-	| opt_mod modificators types opt_mod& opt_mod	//not used
 	| opt_mod modificators types
-
-array_type -> 
-	modificators types
 
 array_vals ->
 	literal, array_vals 
@@ -26,14 +24,11 @@ array_vals ->
 	| identifier, array_vals
 	| identifier
 
-identifier ->
-	^(\\s)*[_,a-z,A-Z][_,A-Z,a-z,0-9]*[_,A-Z,a-z,0-9]
-
 definition -> 
 	type identifier
 	| type identifier = literal
-	| array_type identifier [ literal ]
-	| array_type identifier [ literal ] = { array_vals }
+	| type identifier [ literal ]
+	| type identifier [ literal ] = { array_vals }
 
 
 math_expr -> 

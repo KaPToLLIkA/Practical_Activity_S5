@@ -3,9 +3,8 @@
 #include "lexical_analyzer.h"
 #include "syntax_analyzer.h"
 
-
 int main() {
-	code_loader loader("code2.c");
+	code_loader loader("code.c");
 
 	auto code = loader.load_code();
 
