@@ -242,7 +242,32 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 		return;
 	}
 
-	if (std::regex_match(tokens[start].data, r_identifier)
+	if (get_first(start, end, "int") != std::string::npos
+		|| get_first(start, end, "bool") != std::string::npos
+		|| get_first(start, end, "char") != std::string::npos
+		|| get_first(start, end, "double") != std::string::npos
+		|| get_first(start, end, "float") != std::string::npos
+		) {
+		current_node.childs.push_back(tree_node("definition"));
+		definition(current_node.childs.back(), start, end);
+		if (current_node.childs.back().childs.empty()) {
+			current_node.childs.pop_back();
+		}
+	}
+	else if (get_first(start, end, "==") != std::string::npos
+		|| get_first(start, end, "!=") != std::string::npos
+		|| get_first(start, end, "<=") != std::string::npos
+		|| get_first(start, end, ">=") != std::string::npos
+		|| get_first(start, end, "<") != std::string::npos
+		|| get_first(start, end, ">") != std::string::npos
+		) {
+		current_node.childs.push_back(tree_node("logic_expr"));
+		logic_expr(current_node.childs.back(), start, end);
+		if (current_node.childs.back().childs.empty()) {
+			current_node.childs.pop_back();
+		}
+	}
+	else if (std::regex_match(tokens[start].data, r_identifier)
 		&& !std::regex_match(tokens[start].data, r_types)
 		&& !std::regex_match(tokens[start].data, r_modificators)
 		&& !std::regex_match(tokens[start].data, r_opt_mod)) {
@@ -278,18 +303,6 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 			}
 		}
 	}
-	else if (get_first(start, end, "int") != std::string::npos
-		|| get_first(start, end, "bool") != std::string::npos
-		|| get_first(start, end, "char") != std::string::npos
-		|| get_first(start, end, "double") != std::string::npos
-		|| get_first(start, end, "float") != std::string::npos
-		) {
-		current_node.childs.push_back(tree_node("definition"));
-		definition(current_node.childs.back(), start, end);
-		if (current_node.childs.back().childs.empty()) {
-			current_node.childs.pop_back();
-		}
-	}
 	else if (get_first(start, end, "+") != std::string::npos
 		|| get_first(start, end, "-") != std::string::npos
 		|| get_first(start, end, "/") != std::string::npos
@@ -298,19 +311,6 @@ void syntax_analyzer::expression(tree_node& current_node, size_t start, size_t e
 		) {
 		current_node.childs.push_back(tree_node("math_expr"));
 		math_expr(current_node.childs.back(), start, end);
-		if (current_node.childs.back().childs.empty()) {
-			current_node.childs.pop_back();
-		}
-	}
-	else if (get_first(start, end, "==") != std::string::npos
-		|| get_first(start, end, "!=") != std::string::npos
-		|| get_first(start, end, "<=") != std::string::npos
-		|| get_first(start, end, ">=") != std::string::npos
-		|| get_first(start, end, "<") != std::string::npos
-		|| get_first(start, end, ">") != std::string::npos
-		) {
-		current_node.childs.push_back(tree_node("logic_expr"));
-		logic_expr(current_node.childs.back(), start, end);
 		if (current_node.childs.back().childs.empty()) {
 			current_node.childs.pop_back();
 		}

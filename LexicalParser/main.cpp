@@ -4,7 +4,7 @@
 #include "syntax_analyzer.h"
 
 int main() {
-	code_loader loader("code.c");
+	code_loader loader("code2.c");
 
 	auto code = loader.load_code();
 
